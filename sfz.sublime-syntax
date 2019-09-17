@@ -1,0 +1,25 @@
+%YAML 1.2
+---
+# Created by David Hilowitz (dhilowitz@gmail.com)
+file_extensions:
+  - sfz
+scope: source.sfz
+contexts:
+  main:
+    # Comments begin with a '//' and finish at the end of the line
+    - match: '//'
+      scope: punctuation.definition.comment.sfz
+      push: line_comment
+
+    - match: '<[a-z]+>'
+      scope: keyword.control.sfz
+
+    - match: '\b([a-z_]+)=([^\s]+)\b'
+      captures:
+        1: keyword.parameter.sfz
+        2: constant.numeric.sfz
+
+  line_comment:
+    - meta_scope: comment.line.sfz
+    - match: $
+      pop: true
