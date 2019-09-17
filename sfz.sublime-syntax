@@ -1,25 +1,75 @@
 %YAML 1.2
 ---
+# SFZ File Format Syntax Highlighting for Sublime Text
+#
 # Created by David Hilowitz (dhilowitz@gmail.com)
+# Modified by RedTide (redtid3@gmail.com)
+# 
+name: SFZ
 file_extensions:
   - sfz
 scope: source.sfz
+
+variables:
+  macros: '^\s*(\#\s*define|\#\s*include)\b'
+  defined_variables: '\s*(\$\s*[aA-zZ_0-9]+)\b'
+  headers: '<region>|<group>|<control>|<global>|<curve>|<effect>|<master>'
+  opcodes: \b([a-z0-9_]+)=([aA-zZ0-9_.-]+)\b
+
 contexts:
   main:
+    # SFZ macro directives
+    - match: '{{macros}}'
+      captures:
+        1: keyword.sfz
+
+    # $defined variables
+    - match: '{{defined_variables}}'
+      captures:
+        1: constant.numeric.sfz
+
+    # SFZ headers
+    - match: '{{headers}}'
+      scope: keyword.control.sfz
+
+    # SFZ opcodes
+    - match: '{{opcodes}}'
+      captures:
+        1: constant.numeric.sfz
+        2: variable.annotation.sfz
+
     # Comments begin with a '//' and finish at the end of the line
     - match: '//'
       scope: punctuation.definition.comment.sfz
       push: line_comment
 
-    - match: '<[a-z]+>'
-      scope: keyword.control.sfz
+    # Block comment
+    - match: '/\*'
+      scope: punctuation.definition.comment.begin.sfz
+      push: block_comment
 
-    - match: '\b([a-z_]+)=([^\s]+)\b'
-      captures:
-        1: keyword.parameter.sfz
-        2: constant.numeric.sfz
+    # Strings begin and end with quotes, and use backslashes as an escape character
+    - match: '"'
+      scope: punctuation.definition.string.begin.sfz
+      push: double_quoted_string
 
   line_comment:
     - meta_scope: comment.line.sfz
-    - match: $
+    - match: '$'
+      pop: true
+
+  block_comment:
+    - meta_scope: comment.block.sfz
+    - match: '\\.'
+      scope: constant.character.escape.sfz
+    - match: '\*/'
+      scope: punctuation.definition.comment.end.sfz
+      pop: true
+
+  double_quoted_string:
+    - meta_scope: string.quoted.double.sfz
+    - match: '\\.'
+      scope: constant.character.escape.sfz
+    - match: '"'
+      scope: punctuation.definition.string.end.sfz
       pop: true
